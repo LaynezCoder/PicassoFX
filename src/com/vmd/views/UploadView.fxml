@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" onMouseClicked="#openImageFile" prefHeight="174.0" prefWidth="347.0" styleClass="drag" stylesheets="@../css/main.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.vmd.controllers.UploadViewController">
+   <children>
+      <VBox alignment="CENTER" prefHeight="151.0" prefWidth="303.0">
+         <children>
+            <ImageView fitHeight="59.0" fitWidth="83.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../resources/photo.png" />
+               </image>
+            </ImageView>
+            <Label style="-fx-font-weight: bold;" text="Selecciona una imagen para empezara editar" />
+            <Label text="Sube solo PNG, JPG o  JPEG" />
+         </children>
+      </VBox>
+   </children>
+</HBox>
