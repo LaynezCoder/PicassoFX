@@ -58,7 +58,12 @@
                   </Button>
                   <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#onBtnStickersClick" prefHeight="26.0" prefWidth="110.0" style="-fx-background-color: trasnparent;" text="Button">
                      <graphic>
-                        <MaterialDesignIconView fill="WHITE" glyphName="STICKER" size="20" />
+                        <MaterialDesignIconView fill="WHITE" glyphName="CUBE_OUTLINE" size="20" />
+                     </graphic>
+                  </Button>
+                  <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#onBtnTextClick" prefHeight="26.0" prefWidth="110.0" style="-fx-background-color: trasnparent;" text="Button">
+                     <graphic>
+                        <MaterialDesignIconView fill="WHITE" glyphName="FORMAT_TEXT" size="20" />
                      </graphic>
                   </Button>
                </children>

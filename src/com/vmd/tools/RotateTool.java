@@ -7,12 +7,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
-/**
- * Toolbar de rotación flotante.
- * Uso: new RotateToolbar(baseView, layers).show();  // para mostrar
- *      rotateToolbar.hide();                        // para ocultar
- *      rotateToolbar.toggle();                      // alternar
- */
 public class RotateTool {
 
     private final ImageView baseView;
@@ -68,7 +62,6 @@ public class RotateTool {
         }
     }
 
-    // Ocultar toolbar
     public void hide() {
         if (visible) {
             toolbar.setVisible(false);
@@ -76,7 +69,6 @@ public class RotateTool {
         }
     }
 
-    // Alternar
     public void toggle() {
         if (visible) hide(); else show();
     }

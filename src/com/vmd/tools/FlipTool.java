@@ -7,10 +7,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
-/**
- * Toolbar flotante para voltear la imagen (flip H/V). Uso: FlipToolbar flipTb =
- * new FlipToolbar(baseView, layers); flipTb.toggle(); // mostrar/ocultar
- */
+
 public class FlipTool {
 
     private final ImageView baseView;
@@ -50,7 +47,7 @@ public class FlipTool {
 
         DoubleBinding centerX = layers.widthProperty().subtract(toolbar.widthProperty()).divide(2);
         toolbar.layoutXProperty().bind(centerX);
-        toolbar.setLayoutY(56); // un poco más abajo que el de rotación si lo usas a la vez
+        toolbar.setLayoutY(56);
 //        toolbar.setViewOrder(-100);
     }
 

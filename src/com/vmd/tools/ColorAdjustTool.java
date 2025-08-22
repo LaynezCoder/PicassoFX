@@ -10,12 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
-/**
- * Filtros rápidos sobre un ImageView.
- * Uso:
- *   ColorAdjustTool fx = new ColorAdjustTool(baseView, layers);
- *   fx.toggle();  // mostrar/ocultar toolbar
- */
+
 public class ColorAdjustTool {
 
     private final ImageView baseView;
@@ -29,14 +24,12 @@ public class ColorAdjustTool {
 
     private boolean visible = false;
 
-    // Pasos simples
     private static final double STEP = 0.1;
 
     public ColorAdjustTool(ImageView baseView, Pane layers) {
         this.baseView = baseView;
         this.layers = layers;
 
-        // Encadenar efectos: primero ColorAdjust, luego Sepia
         sepia.setInput(color);
         chain = sepia;
         baseView.setEffect(chain);
@@ -58,15 +51,12 @@ public class ColorAdjustTool {
         toolbar.setStyle("-fx-background-color: rgba(30,30,30,0.85);"
                 + "-fx-background-radius: 10;"
                 + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 3);");
-//        toolbar.setViewOrder(-100);
 
-        // Centrado arriba
         DoubleBinding centerX = layers.widthProperty().subtract(toolbar.widthProperty()).divide(2);
         toolbar.layoutXProperty().bind(centerX);
-        toolbar.setLayoutY(100);
+        toolbar.setLayoutY(10);
     }
 
-    // === Mostrar / ocultar ===
     public void show() {
         if (!visible) {
             if (!layers.getChildren().contains(toolbar)) layers.getChildren().add(toolbar);
@@ -84,7 +74,6 @@ public class ColorAdjustTool {
 
     public void toggle() { if (visible) hide(); else show(); }
 
-    // === Acciones simples ===
     private void setBlackWhite() {
         sepia.setLevel(0);
         color.setSaturation(-1); // B/N directo
@@ -94,7 +83,6 @@ public class ColorAdjustTool {
     }
 
     private void toggleSepia() {
-        // alterna entre 0 y 0.8
         sepia.setLevel(sepia.getLevel() > 0 ? 0 : 0.8);
     }
 
@@ -110,7 +98,6 @@ public class ColorAdjustTool {
         sepia.setLevel(0);
     }
 
-    // Utilidad
     private static double clamp(double v) { return Math.max(-1, Math.min(1, v)); }
 
     // Helpers UI

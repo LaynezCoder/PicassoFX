@@ -35,7 +35,6 @@ public class StickerTool {
     private boolean visible = false;
     private ImageView selected = null;
 
-    // Nombre -> ruta CLASSPATH (empieza con /)
     private final Map<String, String> presetPaths = new HashMap<>();
 
     public StickerTool(Pane layers, Runnable disablePan, Runnable enablePan) {
@@ -43,7 +42,7 @@ public class StickerTool {
         this.disablePan = disablePan;
         this.enablePan  = enablePan;
 
-        // ==== PRESETS (ajusta a tus rutas reales en resources) ====
+
         presetPaths.put("Estrella", "/com/vmd/resources/stickers/star.png");
         presetPaths.put("Corazón",  "/com/vmd/resources/stickers/heart.png");
         presetPaths.put("Flecha",   "/com/vmd/resources/stickers/arrow.png");
@@ -61,33 +60,28 @@ public class StickerTool {
         toolbar.setPadding(new Insets(8));
         toolbar.setStyle("-fx-background-color: rgba(30,30,30,0.85); -fx-background-radius: 10;");
         toolbar.setLayoutX(20);
-        toolbar.setLayoutY(140);
-//        toolbar.setViewOrder(-100); // SIEMPRE encima
-
-        // Capa de stickers
+        toolbar.setLayoutY(20);
+        
         stickerLayer.setPickOnBounds(false);
-        stickerLayer.setMouseTransparent(true); // se activa en show()
+        stickerLayer.setMouseTransparent(true); 
         stickerLayer.prefWidthProperty().bind(layers.widthProperty());
         stickerLayer.prefHeightProperty().bind(layers.heightProperty());
-//        stickerLayer.setViewOrder(-30); // por delante del paintLayer/baseView
 
         if (!layers.getChildren().contains(stickerLayer)) {
             layers.getChildren().add(stickerLayer);
         }
     }
 
-    // ===== Ciclo de vida =====
     public void show() {
         if (visible) return;
         if (!layers.getChildren().contains(toolbar)) layers.getChildren().add(toolbar);
         toolbar.setVisible(true);
 
-        // traer al frente por si otras capas usan viewOrder similar
         stickerLayer.toFront();
         toolbar.toFront();
 
         stickerLayer.setMouseTransparent(false);
-        disablePan.run(); // desactiva pan mientras editas
+        disablePan.run();
         visible = true;
     }
 
@@ -102,11 +96,10 @@ public class StickerTool {
 
     public void toggle() { if (visible) hide(); else show(); }
 
-    // ===== Acciones =====
     private void addPreset() {
         String name = presets.getSelectionModel().getSelectedItem();
         if (name == null) return;
-        Image img = loadResource(presetPaths.get(name));   // **classpath**
+        Image img = loadResource(presetPaths.get(name)); 
         if (img != null) addSticker(img);
     }
 
@@ -117,39 +110,37 @@ public class StickerTool {
         );
         File f = fc.showOpenDialog(layers.getScene().getWindow());
         if (f != null) {
-            // **SIN background** para tener width/height ya mismo
             Image img = new Image(f.toURI().toString(), false);
             addSticker(img);
         }
     }
 
-    // Carga de CLASSPATH: "/com/vmd/resources/stickers/star.png"
     private Image loadResource(String resourcePath) {
         URL url = getClass().getResource(resourcePath);
         if (url == null) {
             System.err.println("No se encontró recurso: " + resourcePath);
             return null;
         }
-        return new Image(url.toExternalForm(), false); // sin background
+        return new Image(url.toExternalForm(), false); 
     }
 
     private void addSticker(Image img) {
         ImageView iv = new ImageView(img);
         iv.setPreserveRatio(true);
 
-        // 1) Tamaño inicial (25% del ancho visible, con límites, y sin depender del background loading)
+
         double initW = Math.min(layers.getWidth() * 0.25, 240);
-        if (initW <= 0) initW = 160; // fallback si aún no hay layout
+        if (initW <= 0) initW = 160; 
         iv.setFitWidth(Math.min(initW, img.getWidth() > 0 ? img.getWidth() : initW));
 
-        // 2) Centrar y asegurar dentro
+  
         iv.setTranslateX((layers.getWidth() - widthOf(iv)) / 2);
         iv.setTranslateY((layers.getHeight() - heightOf(iv)) / 2);
         clampInside(iv);
 
         iv.setCursor(Cursor.OPEN_HAND);
 
-        // Selección y arrastre
+
         iv.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
                 select(iv);
@@ -171,18 +162,18 @@ public class StickerTool {
             }
         });
 
-        // 3) Scroll = escalar con límites y mantener dentro
+
         iv.addEventFilter(ScrollEvent.SCROLL, e -> {
             double factor = (e.getDeltaY() > 0) ? 1.10 : 0.90;
-            double minW = 48;                                    // mínimo visible
-            double maxW = Math.max(96, layers.getWidth() * 0.60); // máximo relativo
+            double minW = 48;                                    
+            double maxW = Math.max(96, layers.getWidth() * 0.60); 
             double newW = clamp(iv.getFitWidth() * factor, minW, maxW);
             iv.setFitWidth(newW);
             clampInside(iv);
             e.consume();
         });
 
-        // Doble clic = al frente
+
         iv.setOnMouseClicked(e -> { if (e.getClickCount() == 2) iv.toFront(); });
 
         stickerLayer.getChildren().add(iv);
@@ -216,18 +207,17 @@ public class StickerTool {
     }
 
     private static double widthOf(ImageView iv) {
-        return iv.getFitWidth(); // preserveRatio=true → ancho visible = fitWidth
+        return iv.getFitWidth(); 
     }
 
     private static double heightOf(ImageView iv) {
         Image img = iv.getImage();
         double iw = img.getWidth();
         double ih = img.getHeight();
-        if (iw <= 0 || ih <= 0) return iv.getFitWidth(); // fallback
+        if (iw <= 0 || ih <= 0) return iv.getFitWidth(); 
         return iv.getFitWidth() * (ih / iw);
     }
 
-    /** Mantiene el sticker dentro del área visible de 'layers'. */
     private void clampInside(ImageView iv) {
         double w = widthOf(iv);
         double h = heightOf(iv);

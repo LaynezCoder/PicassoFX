@@ -8,6 +8,8 @@ import com.vmd.tools.EraseTool;
 import com.vmd.tools.FlipTool;
 import com.vmd.tools.RotateTool;
 import com.vmd.tools.StickerTool;
+import com.vmd.tools.TextTool;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -33,6 +35,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.Cursor;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.WritableImage;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
@@ -42,18 +46,18 @@ import javax.imageio.ImageIO;
 public class FXMLDocumentController implements Initializable {
 
     @FXML
-    private StackPane mainContainer;   // contenedor principal (ok)
+    private StackPane mainContainer;   // contenedor principal
 
     // Visor
     private ScrollPane viewer;
-    private Group zoomGroup;           // nodo al que le aplicamos scale global
-    private Pane layers;              // ⬅️ Pane (no StackPane) para evitar centrados
+    private Group zoomGroup;          
+    private Pane layers;             
     private ImageView baseView;
     private Canvas paintLayer;
 
     // Transformaciones para pan & zoom consistentes
     private final Translate pan = new Translate(0, 0);
-    private final Scale zoom = new Scale(1, 1, 0, 0); // pivot cambia en cada zoom
+    private final Scale zoom = new Scale(1, 1, 0, 0); //
 
     // Overlay de subir
     private HBox uploadOverlay;
@@ -71,25 +75,21 @@ public class FXMLDocumentController implements Initializable {
         cropTool = new com.vmd.tools.CropTool(layers, paintLayer, baseView, pan, zoom);
     }
 
-    /* ===== llamado desde el hijo ===== */
     public void showImageInMainContainer(File file) {
         setupViewerIfNeeded();
 
         Image img = new Image(file.toURI().toString());
         baseView.setImage(img);
 
-        // Capas del tamaño nativo
         paintLayer.setWidth(img.getWidth());
         paintLayer.setHeight(img.getHeight());
         GraphicsContext gc = paintLayer.getGraphicsContext2D();
         gc.clearRect(0, 0, paintLayer.getWidth(), paintLayer.getHeight());
 
-        // El Pane "layers" debe tener tamaño fijo a la imagen
         layers.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         layers.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         layers.setPrefSize(img.getWidth(), img.getHeight());
 
-        // Reset pan & zoom (origen arriba-izquierda, sin re-centrados)
         zoom.setX(1);
         zoom.setY(1);
         pan.setX(0);
@@ -99,8 +99,8 @@ public class FXMLDocumentController implements Initializable {
             uploadOverlay.setVisible(false);
         }
     }
-
-    /* ===== visor + gestos ===== */
+    
+    
     private void setupViewerIfNeeded() {
         if (viewer != null) {
             return;
@@ -112,25 +112,23 @@ public class FXMLDocumentController implements Initializable {
 
         paintLayer = new Canvas(1, 1);
 
-        // Pane en (0,0); sin centrado automático
         layers = new Pane();
         layers.getChildren().addAll(baseView, paintLayer);
-        layers.setPickOnBounds(true); // recibe drag aunque la imagen sea más pequeña
-
-        // Grupo con transformaciones: primero pan, luego zoom
+        layers.setPickOnBounds(true); 
+  
         zoomGroup = new Group(layers);
         zoomGroup.getTransforms().addAll(pan, zoom);
 
         viewer = new ScrollPane(zoomGroup);
-        // ¡Muy importante! No ajustar al viewport:
+       
         viewer.setFitToWidth(false);
         viewer.setFitToHeight(false);
-        // Paneo lo haremos por drag, no por ScrollPane:
+        
         viewer.setPannable(false);
 
         mainContainer.getChildren().setAll(viewer);
 
-        // === Paneo por drag (libre, sin clamps) ===
+        
         layers.setOnMousePressed(e -> {
             dragStartX = e.getSceneX();
             dragStartY = e.getSceneY();
@@ -146,26 +144,24 @@ public class FXMLDocumentController implements Initializable {
         });
         layers.setOnMouseReleased(e -> layers.setCursor(Cursor.DEFAULT));
 
-        // === Zoom suave al cursor ===
+       
         zoomGroup.setOnScroll(e -> {
             double factor = (e.getDeltaY() > 0) ? 1.1 : 0.9;
             double newScale = clamp(zoom.getX() * factor, 0.05, 20);
 
-            // Punto bajo el cursor en coords de 'layers' (contenido)
+          
             Point2D pivotInLayers = layers.sceneToLocal(e.getSceneX(), e.getSceneY());
 
-            // Mantener el punto bajo el cursor "quieto" en pantalla:
-            // 1) coordenadas actuales del pivot en el parent (después de pan+zoom actuales)
+           
             Point2D before = layers.localToScene(pivotInLayers);
 
-            // 2) aplicar nuevo zoom (pivot en (0,0); compensaremos con pan)
+            
             zoom.setX(newScale);
             zoom.setY(newScale);
 
-            // 3) coordenadas del mismo punto tras el zoom
+            
             Point2D after = layers.localToScene(pivotInLayers);
 
-            // 4) ajustar pan por la diferencia
             pan.setX(pan.getX() + (before.getX() - after.getX()));
             pan.setY(pan.getY() + (before.getY() - after.getY()));
 
@@ -177,7 +173,6 @@ public class FXMLDocumentController implements Initializable {
         return (v < min) ? min : (v > max ? max : v);
     }
 
-    /* ===== overlay de upload ===== */
     private void loadUploadOverlay() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vmd/views/UploadView.fxml"));
@@ -189,7 +184,7 @@ public class FXMLDocumentController implements Initializable {
 
             upload.setMaxWidth(Region.USE_PREF_SIZE);
             upload.setMaxHeight(Region.USE_PREF_SIZE);
-            upload.setPickOnBounds(false); // no bloquea drag fuera de sus hijos
+            upload.setPickOnBounds(false); 
             upload.setMouseTransparent(false);
 
             mainContainer.getChildren().add(upload);
@@ -212,10 +207,10 @@ public class FXMLDocumentController implements Initializable {
         File file = fileChooser.showSaveDialog(viewer.getScene().getWindow());
         if (file != null) {
             try {
-                // 🔹 Tomar snapshot de "layers"
+    
                 WritableImage snapshot = layers.snapshot(new SnapshotParameters(), null);
 
-                // Extensión según lo que elija el usuario
+    
                 String ext = getFileExtension(file.getName());
                 if (ext == null || ext.isEmpty()) {
                     file = new File(file.getAbsolutePath() + ".png");
@@ -223,10 +218,25 @@ public class FXMLDocumentController implements Initializable {
                 }
 
                 ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), ext, file);
-                System.out.println("✅ Imagen exportada: " + file.getAbsolutePath());
+
+                Alert ok = new Alert(AlertType.INFORMATION);
+                ok.setTitle("Exportación completada");
+                ok.setHeaderText(null);
+                ok.setContentText("Imagen exportada:\n" + file.getAbsolutePath());
+                ok.initOwner(viewer.getScene().getWindow());
+                ok.showAndWait();
+
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(file);
+                }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                Alert err = new Alert(AlertType.ERROR);
+                err.setTitle("Error al exportar");
+                err.setHeaderText("No se pudo exportar la imagen");
+                err.setContentText(e.getMessage());
+                err.initOwner(viewer.getScene().getWindow());
+                err.showAndWait();
             }
         }
     }
@@ -243,11 +253,35 @@ public class FXMLDocumentController implements Initializable {
                 new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif"),
                 new FileChooser.ExtensionFilter("Todos los archivos", "*.*")
         );
-        // usa la ventana del root directamente (simple)
+
         File file = fc.showOpenDialog(mainContainer.getScene().getWindow());
         if (file != null) {
+            resetAll();
             showImageInMainContainer(file);
         }
+
+        if (cropTool != null) {
+            cropTool.reattachIfNeeded();
+        }
+    }
+
+    private void resetAll() {
+        pan.setX(0);
+        pan.setY(0);
+        zoom.setX(1);
+        zoom.setY(1);
+
+        GraphicsContext gc = paintLayer.getGraphicsContext2D();
+        gc.clearRect(0, 0, paintLayer.getWidth(), paintLayer.getHeight());
+
+        layers.getChildren().clear();
+        layers.getChildren().addAll(baseView, paintLayer);
+
+        if (cropTool != null) {
+            cropTool.reattachIfNeeded();
+        }
+
+        layers.setCursor(Cursor.DEFAULT);
     }
 
     @FXML
@@ -262,7 +296,7 @@ public class FXMLDocumentController implements Initializable {
         if (rotateToolbar == null) {
             rotateToolbar = new RotateTool(baseView, layers);
         }
-        rotateToolbar.toggle(); // aparece/desaparece el toolbar
+        rotateToolbar.toggle();
     }
 
     private FlipTool flipToolbar;
@@ -285,7 +319,6 @@ public class FXMLDocumentController implements Initializable {
         colorTool.toggle();
     }
 
-    // Asumiendo que tu ScrollPane se llama 'viewer'
     private void disablePanZoom() {
         viewer.setPannable(false);
     }
@@ -324,7 +357,6 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private void onBtnStickersClick() {
-        // apaga otras herramientas si están activas
         if (brushTool != null) {
             brushTool.hide();
         }
@@ -342,6 +374,32 @@ public class FXMLDocumentController implements Initializable {
             stickerTool = new com.vmd.tools.StickerTool(layers, this::disablePanZoom, this::enablePanZoom);
         }
         stickerTool.toggle();
+    }
+
+    private TextTool textTool;
+
+    @FXML
+    private void onBtnTextClick() {
+        if (brushTool != null) {
+            brushTool.hide();
+        }
+        if (eraseTool != null) {
+            eraseTool.hide();
+        }
+        if (rotateToolbar != null) {
+            rotateToolbar.hide();
+        }
+        if (flipToolbar != null) {
+            flipToolbar.hide();
+        }
+        if (stickerTool != null) {
+            stickerTool.hide();
+        }
+
+        if (textTool == null) {
+            textTool = new com.vmd.tools.TextTool(layers, baseView, this::disablePanZoom, this::enablePanZoom);
+        }
+        textTool.toggle();
     }
 
 }

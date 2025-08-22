@@ -33,7 +33,7 @@ public class BrushTool {
         this.enablePan = enablePan;
 
         gc = canvas.getGraphicsContext2D();
-        // Config permanente del pincel (cap/join redondos)
+
         gc.setLineCap(StrokeLineCap.ROUND);
         gc.setLineJoin(StrokeLineJoin.ROUND);
 
@@ -47,10 +47,8 @@ public class BrushTool {
         toolbar.setStyle("-fx-background-color: rgba(30,30,30,0.85); -fx-background-radius: 10;");
         toolbar.setLayoutX(20);
         toolbar.setLayoutY(20);
-//        toolbar.setViewOrder(-100);
 
         canvas.setPickOnBounds(true);
-//        canvas.setViewOrder(-10);
         canvas.setMouseTransparent(true);
     }
 
@@ -87,14 +85,12 @@ public class BrushTool {
     }
 
     private void start(MouseEvent e) {
-        // Forzar estado sano tras EraseTool
         gc.setGlobalAlpha(1.0);
         gc.setGlobalBlendMode(BlendMode.SRC_OVER);
-        gc.setEffect(null);                 // por si algún efecto quedó activo
+        gc.setEffect(null);              
         gc.setStroke(color.getValue());
         gc.setLineWidth(size.getValue());
 
-        // Trazado CONTINUO (sin miles de strokeLine)
         gc.beginPath();
         gc.moveTo(e.getX(), e.getY());
         gc.stroke();
@@ -109,8 +105,7 @@ public class BrushTool {
         gc.setLineWidth(size.getValue());
 
         gc.lineTo(e.getX(), e.getY());
-        gc.stroke();   // pinta el tramo acumulado suavemente
-
+        gc.stroke(); 
         e.consume();
     }
 }
